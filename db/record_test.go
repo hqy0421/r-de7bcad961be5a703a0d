@@ -8,7 +8,7 @@ import (
 func TestRecord(t *testing.T) {
 	test := func(e string, want Record, wantErr error) {
 		t.Helper()
-		parsed, err := parseRecord([]byte(e))
+		parsed, err := parseRecord([]byte(e), encUTF8)
 		if have, want := err, wantErr; !reflect.DeepEqual(have, want) {
 			t.Fatalf("have %v, want %v", have, want)
 		}

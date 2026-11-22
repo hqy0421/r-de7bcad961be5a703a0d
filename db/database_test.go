@@ -56,6 +56,7 @@ func TestHeader(t *testing.T) {
 			PageSize:      4096,
 			ChangeCounter: 4,
 			SchemaCookie:  1,
+			Encoding:      encUTF8,
 		},
 		nil,
 	)
@@ -109,6 +110,7 @@ func TestHeader(t *testing.T) {
 			PageSize:      0x010000,
 			ChangeCounter: 4,
 			SchemaCookie:  1,
+			Encoding:      encUTF8,
 		},
 		nil,
 	)
@@ -204,13 +206,32 @@ func TestHeader(t *testing.T) {
 		ErrIncompatible,
 	)
 	test(
-		// invalid value
+		// UTF-16le
 		func(h [headerSize]byte) [headerSize]byte {
 			h[56+3] = 2
 			return h
 		},
+		&header{
+			PageSize:      0x1000,
+			ChangeCounter: 4,
+			SchemaCookie:  1,
+			Encoding:      encUTF16le,
+		},
 		nil,
-		ErrEncoding,
+	)
+	test(
+		// UTF-16be
+		func(h [headerSize]byte) [headerSize]byte {
+			h[56+3] = 3
+			return h
+		},
+		&header{
+			PageSize:      0x1000,
+			ChangeCounter: 4,
+			SchemaCookie:  1,
+			Encoding:      encUTF16be,
+		},
+		nil,
 	)
 	test(
 		func(h [headerSize]byte) [headerSize]byte {
@@ -221,6 +242,7 @@ func TestHeader(t *testing.T) {
 			PageSize:      0x1000,
 			ChangeCounter: 4,
 			SchemaCookie:  1,
+			Encoding:      encUTF8,
 		},
 		nil,
 	)

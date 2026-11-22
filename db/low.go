@@ -74,7 +74,7 @@ func (t *Table) Scan(cb TableScanCB) error {
 				return false, err
 			}
 
-			rec, err := parseRecord(c)
+			rec, err := parseRecord(c, t.db.header.Encoding)
 			if err != nil {
 				return false, err
 			}
@@ -116,7 +116,7 @@ func (t *Table) Rowid(rowid int64) (Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	return parseRecord(c)
+	return parseRecord(c, t.db.header.Encoding)
 }
 
 // Def returns the index definition.
@@ -166,7 +166,7 @@ func (in *Index) ScanEq(key Key, cb RecordCB) error {
 		in.db,
 		key,
 		func(rec Record) (bool, error) {
-			if !Equals(key, rec) {
+			if !equalsEnc(in.db.header.Encoding, key, rec) {
 				return true, nil
 			}
 			return cb(rec), nil
@@ -212,7 +212,7 @@ func (in *Index) ScanRange(from, to Key, cb RecordCB) error {
 		in.db,
 		from,
 		func(rec Record) (bool, error) {
-			if Search(to, rec) {
+			if searchEnc(in.db.header.Encoding, to, rec) {
 				return true, nil
 			}
 			return cb(rec), nil

@@ -18,6 +18,9 @@ ALL:= \
     primarykey.sqlite \
     single.sqlite \
     truncated.sqlite \
+    utf8.sqlite \
+    utf16be.sqlite \
+    utf16le.sqlite \
     values.sqlite \
     wal.sqlite \
     wal_crashed.sqlite \

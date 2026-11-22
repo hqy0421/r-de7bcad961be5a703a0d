@@ -275,7 +275,7 @@ func (l *indexLeaf) Iter(_ int, db *Database, cb indexIterCB) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		rec, err := parseRecord(full)
+		rec, err := parseRecord(full, db.header.Encoding)
 		if err != nil {
 			return false, err
 		}
@@ -304,7 +304,7 @@ func (l *indexLeaf) IterMin(_ int, db *Database, key Key, cb indexIterCB) (bool,
 		if err != nil {
 			return false, err
 		}
-		rec, err := parseRecord(full)
+		rec, err := parseRecord(full, db.header.Encoding)
 		if err != nil {
 			return false, err
 		}
@@ -362,7 +362,7 @@ func (l *indexInterior) Iter(r int, db *Database, cb indexIterCB) (bool, error) 
 		if err != nil {
 			return false, err
 		}
-		rec, err := parseRecord(full)
+		rec, err := parseRecord(full, db.header.Encoding)
 		if err != nil {
 			return false, err
 		}
@@ -418,7 +418,7 @@ func (l *indexInterior) IterMin(r int, db *Database, key Key, cb indexIterCB) (b
 		if err != nil {
 			return false, err
 		}
-		rec, err := parseRecord(full)
+		rec, err := parseRecord(full, db.header.Encoding)
 		if err != nil {
 			return false, err
 		}
@@ -593,10 +593,10 @@ func indexBinSearch(db *Database, pl cellPayload, key Key) (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	rec, err := parseRecord(full)
+	rec, err := parseRecord(full, db.header.Encoding)
 	if err != nil {
 		return true, err
 	}
 
-	return Search(key, rec), nil
+	return searchEnc(db.header.Encoding, key, rec), nil
 }

@@ -14,7 +14,7 @@ var (
 // It can only have fields of these types: nil, int64, float64, string, []byte
 type Record []interface{}
 
-func parseRecord(r []byte) (Record, error) {
+func parseRecord(r []byte, enc textEncoding) (Record, error) {
 	var res Record
 	hSize, n := readVarint(r)
 	if n < 0 || hSize < int64(n) || hSize > int64(len(r)) {
@@ -101,14 +101,17 @@ func parseRecord(r []byte) (Record, error) {
 				res = append(res, p)
 			} else {
 				// odd, string
-				// TODO: deal with encoding
 				l := (c - 13) / 2
 				if int64(len(body)) < l {
 					return res, ErrCorrupted
 				}
 				p := body[:l]
 				body = body[l:]
-				res = append(res, string(p))
+				s, ok := enc.decode(p)
+				if !ok {
+					return res, ErrCorrupted
+				}
+				res = append(res, s)
 			}
 		}
 	}

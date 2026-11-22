@@ -48,6 +48,8 @@ type header struct {
 	ChangeCounter uint32
 	// Updated when any table definition changes
 	SchemaCookie uint32
+	// The encoding of all TEXT values in the database.
+	Encoding textEncoding
 }
 
 type objectCache struct {
@@ -195,10 +197,14 @@ func parseHeader(b []byte) (header, error) {
 
 	switch hs.TextEncoding {
 	case 1:
-		// UTF8. It's the only thing we currently support
-	case 2, 3:
-		// UTF16le and UTF16be
-		return h, ErrEncoding
+		// UTF8
+		h.Encoding = encUTF8
+	case 2:
+		// UTF16le
+		h.Encoding = encUTF16le
+	case 3:
+		// UTF16be
+		h.Encoding = encUTF16be
 	default:
 		return h, ErrIncompatible
 	}
@@ -289,7 +295,7 @@ func (db *Database) master() ([]sqliteMaster, error) {
 			return false, err
 		}
 
-		e, err := parseRecord(c)
+		e, err := parseRecord(c, db.header.Encoding)
 		if err != nil {
 			return false, err
 		}

@@ -65,7 +65,7 @@ func TestTablesFour(t *testing.T) {
 			if err != nil {
 				return false, err
 			}
-			e, err := parseRecord(c)
+			e, err := parseRecord(c, encUTF8)
 			if err != nil {
 				return false, err
 			}
@@ -117,7 +117,7 @@ func TestTableLong(t *testing.T) {
 			if err != nil {
 				return false, err
 			}
-			e, err := parseRecord(c)
+			e, err := parseRecord(c, encUTF8)
 			if err != nil {
 				return false, err
 			}
@@ -179,7 +179,7 @@ func TestTableOverflow(t *testing.T) {
 			if err != nil {
 				return false, err
 			}
-			e, err := parseRecord(c)
+			e, err := parseRecord(c, encUTF8)
 			if err != nil {
 				return false, err
 			}
@@ -229,7 +229,7 @@ func TestTableValues(t *testing.T) {
 			if err != nil {
 				return false, err
 			}
-			e, err := parseRecord(c)
+			e, err := parseRecord(c, encUTF8)
 			if err != nil {
 				return false, err
 			}

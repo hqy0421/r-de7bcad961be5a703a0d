@@ -54,7 +54,7 @@ Things SQLittle can not do:
 
 ```
 - read-only
-- only supports UTF8 strings
+- only supports UTF8, UTF-16le, and UTF-16be strings
 - no joins
 - WAL files are not supported
 - indexes are used for sorting, but there is no on-the-fly sorting

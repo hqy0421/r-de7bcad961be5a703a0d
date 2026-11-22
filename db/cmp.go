@@ -43,16 +43,58 @@ type KeyCol struct {
 	Desc    bool
 }
 
+// collateFunc returns the collate function to use. BINARY compares the raw
+// bytes in the database encoding. The other built-in collating functions work
+// on the decoded UTF-8 text, independent of the file encoding (which is what
+// SQLite does).
+func collateFunc(name string, enc textEncoding) collate {
+	if name == "" {
+		name = DefaultCollate
+	}
+	switch name {
+	case "binary":
+		return enc.compare
+	case "rtrim":
+		// SQLite's RTRIM only strips U+0020.
+		return func(a, b string) int {
+			return strings.Compare(
+				strings.TrimRight(a, " "),
+				strings.TrimRight(b, " "),
+			)
+		}
+	case "nocase":
+		// Only ASCII letters are folded, the same as SQLite's NOCASE.
+		lc := func(r rune) rune {
+			if r >= 'A' && r <= 'Z' {
+				return r + ('a' - 'A')
+			}
+			return r
+		}
+		return func(a, b string) int {
+			return strings.Compare(
+				strings.Map(lc, a),
+				strings.Map(lc, b),
+			)
+		}
+	}
+	if f, ok := CollateFuncs[name]; ok {
+		return f
+	}
+	return enc.compare
+}
+
 func Equals(key Key, r Record) bool {
+	return equalsEnc(encUTF8, key, r)
+}
+
+// equalsEnc is Equals(), comparing text values with the given database
+// encoding.
+func equalsEnc(enc textEncoding, key Key, r Record) bool {
 	for i, k := range key {
 		if len(r)-1 < i {
 			return false
 		}
-		coll := DefaultCollate
-		if k.Collate != "" {
-			coll = k.Collate
-		}
-		if compare(k.V, r[i], CollateFuncs[coll]) != 0 {
+		if compare(k.V, r[i], collateFunc(k.Collate, enc)) != 0 {
 			return false
 		}
 	}
@@ -61,15 +103,17 @@ func Equals(key Key, r Record) bool {
 
 // True if r is eq or bigger than key
 func Search(key Key, r Record) bool {
+	return searchEnc(encUTF8, key, r)
+}
+
+// searchEnc is Search(), comparing text values with the given database
+// encoding.
+func searchEnc(enc textEncoding, key Key, r Record) bool {
 	for i, k := range key {
 		if len(r)-1 < i {
 			return false
 		}
-		coll := DefaultCollate
-		if k.Collate != "" {
-			coll = k.Collate
-		}
-		cmp := compare(k.V, r[i], CollateFuncs[coll])
+		cmp := compare(k.V, r[i], collateFunc(k.Collate, enc))
 		if k.Desc {
 			switch {
 			case cmp > 0:
